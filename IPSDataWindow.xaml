@@ -1,0 +1,27 @@
+﻿<Window x:Class="ipswintakplugin.IPSDataWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ipswintakplugin"
+        mc:Ignorable="d"
+        Title="IPSDataWindow" Height="450" Width="800">
+    <DockPanel>
+        <!-- Toggle button at the top -->
+        <ToggleButton x:Name="ToggleFormatButton" 
+                      Content="Switch to Formatted" 
+                      DockPanel.Dock="Top"
+                      Margin="5"
+                      Click="ToggleFormatButton_Click" BorderBrush="#FF6377C7" Background="#FF2A58E6" />
+
+        <!-- Scrollable text display -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <TextBlock x:Name="IPSDataTextBlock"
+                       TextWrapping="Wrap"
+                       TextAlignment="Left"
+                       FontFamily="Consolas"
+                       FontSize="12"
+                       Padding="10"/>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

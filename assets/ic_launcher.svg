@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg
+    version="1.1"
+    id="Layer_1"
+    xmlns="http://www.w3.org/2000/svg"
+    x="0px"
+    y="0px"
+    viewBox="0 0 59.3 67.8"
+    xml:space="preserve">
+
+  <!-- Clipboard shape with a white border.
+       (Note: Slightly inset the horizontal coordinates so the stroke isn’t cut off.) -->
+  <path
+    stroke="#FFFFFF"
+    stroke-width="2"
+    d="M1,8 
+       H19.65 
+       V0 
+       H39.35 
+       V8 
+       H58.3 
+       V67.8 
+       H1 
+       Z" />
+
+  <!-- Bigger white plus sign placed approximately halfway down the shape.  
+       Here the plus sign is composed of two rectangles:
+         • The vertical bar (4 x 16)
+         • The horizontal bar (16 x 4)
+       Their coordinates are set relative to the viewbox’s center. -->
+  <rect
+    x="27.65"
+    y="16.9"
+    width="4"
+    height="16"
+    fill="#FFFFFF" />
+  <rect
+    x="21.65"
+    y="22.9"
+    width="16"
+    height="4"
+    fill="#FFFFFF" />
+ <!-- White check mark in the main body -->
+  <!-- Simple polygon path—adjust points for your preferred shape/size -->
+  <path
+    fill="#FFFFFF"
+    stroke-width="6"
+    d="M12,45 
+       L15,42 
+       L26,53 
+       L43,33 
+       L46,36 
+       L26,58 
+       Z"
+    transform="translate(5,0)" />
+
+</svg>

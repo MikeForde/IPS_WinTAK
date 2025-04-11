@@ -1,0 +1,62 @@
+<UserControl x:Class="ipswintakplugin.IPSView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ipswintakplugin"
+             xmlns:resx="clr-namespace:ipswintakplugin.Properties"
+             mc:Ignorable="d" 
+             d:DesignHeight="3000" d:DesignWidth="300">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ipswintakplugin;component/CustomWidgets.xaml" />
+                <ResourceDictionary Source="/WinTak.UI;component/DefaultTheme.xaml" x:Name="Dict" />
+                <!-- tak.gov documenation/WinTAK Development/WinTAK UI Design Guide -->
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <ScrollViewer>
+            <StackPanel>
+
+                <TextBlock Style="{StaticResource WinTakTextBlockTextDesign}" Text="WinTak IPS plugin Demo" />
+                <Separator Style="{StaticResource WinTakSeparatorDesign}" />
+
+                <TextBlock Style="{StaticResource WinTakTextBlockTextTitle}" Text="Get IPS Data" />
+                <Separator Style="{StaticResource WinTakSeparatorDesign}" />
+                <Button Content="{x:Static resx:Resources.btnSpecialWheelMarkerName}" Command="{Binding SpecialMarkerBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnSpecialWheelMarkerDescription}" />
+                <Button Content="{x:Static resx:Resources.btnAddStreamName}" Command="{Binding AddStreamBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnAddStreamDescription}" />
+                <Button Content="Show/Hide IPS Data" Command="{Binding ItemInspectBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnItemInspectDescription}" />
+
+                <TextBlock Style="{StaticResource WinTakTextBlockTextTitle}" Text="Notification Examples" />
+                <Separator Style="{StaticResource WinTakSeparatorDesign}" />
+                <Button Content="{x:Static resx:Resources.btnGetCurrentNotificationsName}" Command="{Binding GetCurrentNotificationsBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnGetCurrentNotificationsDescription}" />
+                <Button Content="{x:Static resx:Resources.btnFakeContentProviderName}" Command="{Binding FakeContentProviderBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnFakeContentProviderDescription}" />
+                <Button Content="{x:Static resx:Resources.btnNotificationSpammerName}" Command="{Binding NotificationSpammerBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnNotificationSpammerDescription}" />
+                <Button Content="{x:Static resx:Resources.btnNotificationWithOptionsName}" Command="{Binding NotificationWithOptionsBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnNotificationWithOptionsDescription}" />
+                <Button Content="{x:Static resx:Resources.btnNotificationToWinTakToastName}" Command="{Binding NotificationToWinTakToastBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnNotificationToWinTakToastDescription}" />
+                <Button Content="{x:Static resx:Resources.btnNotificationToWindowsName}" Command="{Binding NotificationToWindowsBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnNotificationToWindowsDescription}" />
+
+                <TextBlock Style="{StaticResource WinTakTextBlockTextTitle}" Text="Web" />
+                <Separator Style="{StaticResource WinTakSeparatorDesign}" />
+                <Button Content="IPS MERN" Command="{Binding WebViewBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnWebViewDescription}" />
+                <Button Content="IPS Record" Command="{Binding WebRecordViewBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnWebViewDescription}" Click="Button_Click" />
+
+                <TextBlock Style="{StaticResource WinTakTextBlockTextTitle}" Text="Plugin Template Duplicate" />
+                <Separator Style="{StaticResource WinTakSeparatorDesign}" />
+
+                <Button Content="Increase Counter" Command="{Binding IncreaseCounterBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="Hit the button to increase the counter" />
+                <TextBlock Text="{Binding Counter}" />
+                <ToggleButton Content="(de)activate" IsChecked="{Binding MapFunctionIsActivate}" Style="{StaticResource DarkButtonStyle}" ToolTip="Hit the button to (de)activate mouse GPS information" />
+                <TextBlock>
+                    <Run Text="Lat : " />
+                    <Run Text="{Binding MapFunctionLat}" />
+                    <Run Text=" ; Long : " />
+                    <Run Text="{Binding MapFunctionLon}" />
+                </TextBlock>
+                <Button Content="Tewkesbury" Command="{Binding WhiteHouseCoTBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

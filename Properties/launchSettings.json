@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "ipswintakplugin": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\WinTAK\\WinTAK.exe",
+      "workingDirectory": "C:\\Program Files\\WinTAK"
+    }
+  }
+}
