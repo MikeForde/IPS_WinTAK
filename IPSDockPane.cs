@@ -1,74 +1,57 @@
-﻿using System;
+﻿using ipswintakplugin.Common;
+using ipswintakplugin.Notifications;
+using ipswintakplugin.Properties;
+using MapEngine.Interop.Util;
+using Microsoft.Toolkit.Uwp.Notifications;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using System.Xml.Linq;
-using System.IO.Compression;
 using System.Text;
-
-using Microsoft.Toolkit.Uwp.Notifications;
-
-using MapEngine.Interop.Util;
-using WinTak.Display;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Xml.Linq;
+using Windows.Web.Http;
+using WinTak.Alerts;
 using WinTak.Common.Coords;
 using WinTak.Common.CoT;
+using WinTak.Common.Geofence;
+using WinTak.Common.Location;
 using WinTak.Common.Messaging;
 using WinTak.Common.Preferences;
 using WinTak.Common.Services;
+using WinTak.Common.Utils;
+using WinTak.CursorOnTarget;
+using WinTak.CursorOnTarget.Placement.DockPanes;
 using WinTak.CursorOnTarget.Services;
+using WinTak.Display;
+using WinTak.Display.Controls;
 using WinTak.Framework;
 using WinTak.Framework.Docking;
 using WinTak.Framework.Docking.Attributes;
 using WinTak.Framework.Messaging;
 using WinTak.Framework.Notifications;
-using WinTak.Location.Services;
-
-using ipswintakplugin.Notifications;
-using ipswintakplugin.Common;
-using System.ComponentModel;
-using System.Collections.Generic;
-using WinTak.UI;
-using WinTak.CursorOnTarget;
-using WinTak.Common.Utils;
-using TAKEngine.Core;
-using WinTak.Mapping;
-using WinTak.Graphics.Map;
 using WinTak.Graphics;
-using WinTak.Graphics.GL;
-using WinTak.Overlays.ViewModels;
-using atakmap.cpp_cli.core;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using WinTak.Overlays.Services;
-using ipswintakplugin.Properties;
-using WinTak.Common.Geofence;
-using WinTak.Alerts;
-using System.Windows.Controls;
-using System.Collections.ObjectModel;
-using WinTak.Alerts.Notifications;
-using Prism.Events;
-using WinTak.Display.Controls;
-using WinTak.Mapping.Services;
-using WinTak.UI.Themes;
-using System.Windows;
-using WinTak.CursorOnTarget.Placement.DockPanes;
-using Windows.ApplicationModel.Contacts;
-using WinTak.Net.Contacts;
-using WinTak.MissionPackages;
-using WinTak.Common.Time;
-using WinTak.Common.Location;
-using WinTak.Common.Editors;
-using WinTak.Location.Views;
+using WinTak.Graphics.Map;
 using WinTak.Location.Providers;
-using System.Threading;
-using atakmap.cpp_cli.renderer.map;
-using Spyglass.Graphics;
-using Windows.Web.Http;
+using WinTak.Location.Services;
+using WinTak.Mapping;
+using WinTak.Mapping.Services;
+using WinTak.MissionPackages;
+using WinTak.Net.Contacts;
+using WinTak.Overlays.Services;
+using WinTak.Overlays.ViewModels;
+using WinTak.UI;
+using WinTak.UI.Themes;
 
 
 namespace ipswintakplugin
@@ -175,6 +158,9 @@ namespace ipswintakplugin
         /* ***** Web */
         public ICommand WebViewBtn { get; private set; }
         public ICommand WebRecordViewBtn { get; private set; }
+
+        /* ****** QR */
+        public ICommand ScanAnimatedQrBtn { get; private set; }
 
         /* ***** Plugin Template Duplicate (From WinTAK-Documentation) ***** */
         public ICommand IncreaseCounterBtn { get; private set; }
@@ -376,6 +362,11 @@ namespace ipswintakplugin
             whiteHouseCoTCommand.Executed += OnDemandExecuted_WhiteHouseCoTBtn;
             WhiteHouseCoTBtn = whiteHouseCoTCommand;
 
+            // QR Code
+            var scanAqrCommand = new ExecutedCommand();
+            scanAqrCommand.Executed += OnDemandExecuted_ScanAnimatedQrBtn;
+            ScanAnimatedQrBtn = scanAqrCommand;
+
         }
 
         // --------------------------------------------------------------------
@@ -463,7 +454,7 @@ namespace ipswintakplugin
 
         }
 
-        
+
         private void PlaceIPS_MapClick(object sender, MapMouseEventArgs e)
         {
             Log.i(TAG, MethodBase.GetCurrentMethod() + "");
@@ -671,7 +662,87 @@ namespace ipswintakplugin
             }
         }
 
-        //public void SetMarker(MapMarker marker) { }
+        private void OnDemandExecuted_ScanAnimatedQrBtn(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1) Open scanner window (modal)
+                var win = new ipswintakplugin.AnimatedQr.AnimatedQrScanWindow
+                {
+                    Owner = Application.Current?.MainWindow
+                };
+
+                win.ShowDialog();
+
+                var result = win.Result;
+                if (result == null)
+                {
+                    Toast.Show("Animated QR scan cancelled.");
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(result.DecodeError))
+                {
+                    Prompt.Show("Animated QR decoded with issues:\n" + result.DecodeError);
+                    Log.i(TAG, "AQR decode error: " + result.DecodeError);
+                    // continue anyway if payload exists
+                }
+
+                if (string.IsNullOrWhiteSpace(result.DecodedUtf8))
+                {
+                    Prompt.Show("Animated QR scan produced no decoded payload.");
+                    return;
+                }
+
+                // 2) Determine location (current GPS)
+                var pos = _locationService.GetGpsPosition();
+                var geoPoint = new TAKEngine.Core.GeoPoint(pos)
+                {
+                    Altitude = _elevationManager.GetElevation(pos),
+                    AltitudeRef = global::TAKEngine.Core.AltitudeReference.HAE
+                };
+                if (double.IsNaN(geoPoint.Altitude)) geoPoint.Altitude = Altitude.UNKNOWN_VALUE;
+
+                // 3) Build callsign
+                var patientName = TryExtractPatientNameFromFhirBundle(result.DecodedUtf8);
+                var callsign = string.IsNullOrWhiteSpace(patientName) ? "Patient" : $"Patient: {patientName}";
+                callsign = _coTManager.CreateCallsign(callsign, CallsignCreationMethod.BasedOnTypeAndDate);
+
+                // 4) CoT payload: gzip+base64 the decoded UTF8 (keep compatible with your existing inspection flow)
+                var gzB64 = CompressUtf8ToBase64Gzip(result.DecodedUtf8);
+
+                // 5) Create/Publish CoT marker (local add + network send)
+                var uid = Guid.NewGuid().ToString();
+                var type = "a-f-A"; // same as your “patient-ish” marker type
+                var how = "h-g";
+
+                // Put ipsData in detail; keep it simple and aligned with your other code
+                var detail = $@"<detail>
+                      <contact callsign=""{System.Security.SecurityElement.Escape(callsign)}"" />
+                      <ipsData encoding=""gzipBase64"">{gzB64}</ipsData>
+                      <_IPS_ title=""{System.Security.SecurityElement.Escape(callsign)}"" />
+                      <precisionlocation altsrc=""DTED0"" />
+                    </detail>";
+
+                // Add to map (creates marker)
+                _coTManager.AddItem(uid, type, geoPoint, callsign, detail);
+
+                // If you also want to explicitly TX the CoT, uncomment and adapt based on your ICotMessageSender API:
+                // var cot = new CotEvent { Uid = uid, Type = type, How = how };
+                // cot.Point.Latitude = geoPoint.Latitude;
+                // cot.Point.Longitude = geoPoint.Longitude;
+                // cot.Point.Altitude = geoPoint.Altitude;
+                // cot.Detail = detail; // (property name may differ)
+                // _cotMessageSender.Send(cot); // adapt to actual method in your SDK
+
+                Toast.Show("Published Patient CoT from Animated QR.");
+            }
+            catch (Exception ex)
+            {
+                Log.e(TAG, "Animated QR scan/publish failed: " + ex);
+                Prompt.Show("Animated QR scan/publish failed:\n" + ex.Message);
+            }
+        }
 
         /* Layout Example - Recycler View
             * --------------------------------------------------------------------
@@ -856,6 +927,47 @@ namespace ipswintakplugin
             };
         }
 
+        private static string CompressUtf8ToBase64Gzip(string utf8)
+        {
+            var inputBytes = Encoding.UTF8.GetBytes(utf8);
+            using var ms = new MemoryStream();
+            using (var gz = new GZipStream(ms, CompressionMode.Compress, leaveOpen: true))
+            {
+                gz.Write(inputBytes, 0, inputBytes.Length);
+            }
+            return Convert.ToBase64String(ms.ToArray());
+        }
+
+        private static string TryExtractPatientNameFromFhirBundle(string decodedUtf8)
+        {
+            try
+            {
+                var jo = Newtonsoft.Json.Linq.JObject.Parse(decodedUtf8);
+                // very lightweight heuristic for your Bundle:
+                // entry[].resource.resourceType == "Patient" then resource.name[0].family + given[0]
+                var entries = jo["entry"] as Newtonsoft.Json.Linq.JArray;
+                if (entries == null) return null;
+
+                foreach (var e in entries)
+                {
+                    var res = e["resource"] as Newtonsoft.Json.Linq.JObject;
+                    if (res?["resourceType"]?.ToString() != "Patient") continue;
+
+                    var name0 = res["name"]?.First;
+                    var fam = name0?["family"]?.ToString();
+                    var given0 = name0?["given"]?.First?.ToString();
+
+                    var full = $"{given0} {fam}".Trim();
+                    return string.IsNullOrWhiteSpace(full) ? null : full;
+                }
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
 
         // --------------------------------------------------------------------
         // Marker Manipulation
@@ -967,7 +1079,7 @@ namespace ipswintakplugin
                 // Turn on CoT inspection mode.
                 _isCotInspectionActive = true;
                 //OnPropertyChanged(nameof(CotInspectionButtonText)); // Notify the UI to update the button text.
-                
+
 
                 // Show instructions.
                 Prompt.Show("Tap on a map object to view its IPS data.");
@@ -990,7 +1102,7 @@ namespace ipswintakplugin
                 if (selectedItem != null)
                 {
                     // Hide the WheelMenu
-                    
+
                     if (selectedItem.Properties.TryGetValue("cot-event", out object cotDataObj))
                     {
                         string cotData = cotDataObj.ToString();
@@ -1244,7 +1356,7 @@ namespace ipswintakplugin
                 });
         }
 
-        
+
         // --------------------------------------------------------------------
         // Web
         // --------------------------------------------------------------------
@@ -1501,4 +1613,4 @@ namespace ipswintakplugin
             _messageHub.Publish(message);
         }
     }
-    }
+}

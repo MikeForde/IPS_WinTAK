@@ -1,4 +1,4 @@
-//using System.Reflection;
+﻿//using System.Reflection;
 //using System.Resources;
 //using System.Runtime.InteropServices;
 //using System.Windows;
@@ -11,7 +11,7 @@
 //[assembly: AssemblyConfiguration("")]
 //[assembly: AssemblyCompany("MEDMAC")]
 //[assembly: AssemblyProduct("IPS WinTAK")]
-//[assembly: AssemblyCopyright("Copyright �  2025")]
+//[assembly: AssemblyCopyright("Copyright ©  2025")]
 //[assembly: AssemblyTrademark("")]
 //[assembly: AssemblyCulture("")]
 

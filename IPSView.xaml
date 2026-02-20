@@ -28,6 +28,10 @@
                 <Button Content="{x:Static resx:Resources.btnSpecialWheelMarkerName}" Command="{Binding SpecialMarkerBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnSpecialWheelMarkerDescription}" />
                 <Button Content="{x:Static resx:Resources.btnAddStreamName}" Command="{Binding AddStreamBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnAddStreamDescription}" />
                 <Button Content="Show/Hide IPS Data" Command="{Binding ItemInspectBtn}" Style="{StaticResource DarkButtonStyle}" ToolTip="{x:Static resx:Resources.btnItemInspectDescription}" />
+                <Button Content="Scan Animated QR"
+                    Command="{Binding ScanAnimatedQrBtn}"
+                    Style="{StaticResource DarkButtonStyle}"
+                    ToolTip="Scan an animated QR and broadcast an IPS CoT at current location." />
 
                 <TextBlock Style="{StaticResource WinTakTextBlockTextTitle}" Text="Notification Examples" />
                 <Separator Style="{StaticResource WinTakSeparatorDesign}" />
